@@ -1,3 +1,11 @@
+//
+//  MapLoader.cpp
+//  New Project 4
+//
+//  Created by Ishan Sharma on 3/11/17.
+//  Copyright © 2017 Ishan Sharma. All rights reserved.
+//
+
 #include "provided.h"
 #include <string>
 #include <iostream>
@@ -9,11 +17,11 @@ using namespace std;
 class MapLoaderImpl
 {
 public:
-	MapLoaderImpl();
-	~MapLoaderImpl();
-	bool load(string mapFile);
-	size_t getNumSegments() const;
-	bool getSegment(size_t segNum, StreetSegment& seg) const;
+    MapLoaderImpl();
+    ~MapLoaderImpl();
+    bool load(string mapFile);
+    size_t getNumSegments() const;
+    bool getSegment(size_t segNum, StreetSegment& seg) const;
     
 private:
     vector<StreetSegment> m_VstSeg;
@@ -42,73 +50,105 @@ bool MapLoaderImpl::load(string mapFile)
     
     while (getline(infile, s)){
         
-        double slat,slong, elat, elong;
+        string x;
+        getline(infile,x);
+        string slat,slong, elat, elong;
+        int c=0;
+        while(x[c]!=','){
+            slat+=x[c];
+            c++;
+        }
+        c++;
         
-        infile >> slat;
-        infile.ignore(1000, ',');
-        infile.ignore(1000, ' ');
+        if(x[c]==' '){
+            c++;
+        }
         
-        infile>> slong;
-        infile.ignore(1000, ' ');
+        while(x[c]!=' '){
+            slong+=x[c];
+            c++;
+        }
+        c++;
         
-        infile >> elat;
-        infile.ignore(1000, ',');
+        while(x[c] != ','){
+            elat+=x[c];
+            c++;
+        }
+        c++;
         
-        infile>> elong;
-        infile.ignore(10000, '\n');
+        if(x[c]==' '){
+            c++;
+        }
+        
+        while(c!=x.size()){
+            elong+=x[c];
+            c++;
+        }
+        c++;
         
         StreetSegment temp;
         temp.streetName=s;
         
-        temp.segment.start.latitude=slat;
-        temp.segment.start.longitude=slong;
+        GeoCoord start((slat),(slong));
+        GeoCoord end((elat),(elong));
         
-        temp.segment.end.latitude= elat;
-        temp.segment.end.longitude= elong;
-        
-        temp.segment.start.latitudeText=to_string(slat);
-        temp.segment.start.longitudeText=to_string(slong);
-        
-        temp.segment.end.latitudeText=to_string(elat);
-        temp.segment.end.longitudeText=to_string(elong);
+        temp.segment.start=start;
+        temp.segment.end=end;
 
+        
         m_VstSeg.push_back(temp);
         int attrac;
         infile >> attrac;
         
         infile.ignore(10000, '\n');
         
-        int i=0;
+        //int i=0;
         while (attrac>0){
-            string s2;              // ONLY TAKES FIRST WORD FIX!!!!!!!!!!
-            infile >> s2;
+            string s2;
+            getline(infile, s2);
+            string aname="";
+            int j=0;
             
-            infile.ignore(1000, '|');
-            double alat, along;
-            infile >> alat;
-            infile.ignore(1000, ',');
-            infile.ignore(1000, ' ');
-            infile >> along;
-            infile.ignore(10000, '\n');
+            while(s2[j]!='|'){
+                aname+=s2[j];
+                j++;
+            }
+            j++;
             
-            Attraction temp;
-            temp.name=s2;
-            temp.geocoordinates.latitude=alat;
-            temp.geocoordinates.longitude=along;
+            string alat="";
+            while(s2[j]!=','){
+                alat+=s2[j];
+                j++;
+            }
+            j++;
+            if(s2[j]==' '){
+                j++;
+            }
             
-            temp.geocoordinates.latitudeText=to_string(alat);
-            temp.geocoordinates.longitudeText=to_string(along);
+            string along="";
+            while(j!=s2.size()){
+                along+=s2[j];
+                j++;
+            }
             
-            m_VstSeg[m_NstSeg].attractions.push_back(temp);
+            Attraction t;
+            t.name=aname;
+            t.geocoordinates.latitude=stod(alat);
+            t.geocoordinates.longitude=stod(along);
             
-            i++;
+            t.geocoordinates.latitudeText=alat;
+            t.geocoordinates.longitudeText=along;
+            
+            m_VstSeg[m_NstSeg].attractions.push_back(t);
+            
+            //i++;
             attrac--;
         }
         
         m_NstSeg++;
     }
     
-	return false;  // This compiles, but may not be correct
+    return true;  // This compiles, but may not be correct
 }
 
 size_t MapLoaderImpl::getNumSegments() const
@@ -118,7 +158,7 @@ size_t MapLoaderImpl::getNumSegments() const
 
 bool MapLoaderImpl::getSegment(size_t segNum, StreetSegment &seg) const
 {
-    if (segNum < 0 ||segNum >=getNumSegments()){
+    if (segNum >=getNumSegments()){
         return false;
     }
     seg=m_VstSeg[segNum];
@@ -133,25 +173,25 @@ bool MapLoaderImpl::getSegment(size_t segNum, StreetSegment &seg) const
 
 MapLoader::MapLoader()
 {
-	m_impl = new MapLoaderImpl;
+    m_impl = new MapLoaderImpl;
 }
 
 MapLoader::~MapLoader()
 {
-	delete m_impl;
+    delete m_impl;
 }
 
 bool MapLoader::load(string mapFile)
 {
-	return m_impl->load(mapFile);
+    return m_impl->load(mapFile);
 }
 
 size_t MapLoader::getNumSegments() const
 {
-	return m_impl->getNumSegments();
+    return m_impl->getNumSegments();
 }
 
 bool MapLoader::getSegment(size_t segNum, StreetSegment& seg) const
 {
-   return m_impl->getSegment(segNum, seg);
+    return m_impl->getSegment(segNum, seg);
 }

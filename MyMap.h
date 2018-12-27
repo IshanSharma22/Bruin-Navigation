@@ -1,15 +1,15 @@
 //
 //  MyMap.h
-//  Project 4
+//  New Project 4
 //
-//  Created by Ishan Sharma on 3/8/17.
+//  Created by Ishan Sharma on 3/11/17.
 //  Copyright © 2017 Ishan Sharma. All rights reserved.
 //
 
 #ifndef MyMap_h
 #define MyMap_h
-
 #include <string>
+#include "suport.h"
 #include "provided.h"
 
 using namespace std;
@@ -73,9 +73,9 @@ public:
                 cur->m_val=value;
                 return;
             }
-        
             
-            if ((cur->m_key) < key){
+            
+            if ((cur->m_key) >= key){
                 if (cur->m_leftChild == NULL){
                     cur->m_leftChild=new Node<KeyType, ValueType>(key, value, NULL, NULL);
                     m_size++;
@@ -86,7 +86,7 @@ public:
                 }
             }
             
-            else if ((cur->m_key)>key){
+            else if ((cur->m_key) <= key){
                 if (cur->m_rightChild == NULL){
                     cur->m_rightChild=new Node<KeyType, ValueType>(key, value, NULL, NULL);
                     m_size++;
@@ -96,7 +96,7 @@ public:
                     cur=cur->m_rightChild;
                 }
             }
-
+            
             
         }
         
@@ -128,7 +128,7 @@ private:
     
     Node<KeyType, ValueType>* m_head;
     int m_size;
-   
+    
     void m_Clear(Node<KeyType, ValueType> * node){
         if (node== NULL){
             return;
@@ -143,10 +143,10 @@ private:
         while(ptr!= NULL){
             if (ptr->m_key==key)
                 return &(ptr->m_val);
-            else if (key < ptr->m_key){
+            else if ((ptr->m_key) >= key){
                 return m_Find(key, ptr->m_leftChild);
             }
-            else if (key > ptr->m_key){
+            else if (ptr->m_key <= key){
                 return m_Find(key, ptr->m_rightChild);
             }
         }
